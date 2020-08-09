@@ -649,13 +649,12 @@ static int ev3_uart_receive_buf2(struct tty_struct *tty,
 			chksum = 0xFF;
 			for (i = 0; i < msg_size - 1; i++)
 				chksum ^= message[i];
-			debug_pr("chksum:%d, actual:%d\n",
-				 chksum, message[msg_size - 1]);
+
 			/*
 			 * The LEGO EV3 color sensor sends bad checksums
 			 * for RGB-RAW data (mode 4). The previous checksum byte
 			 * (10th position) is XORed to the real checksum. XORing
-			 * it in here should produce the same final checksum value.
+			 * it here should produce the same final checksum value.
 			 */
 			if (port->type_id == EV3_UART_TYPE_ID_COLOR
 			    && message[0] == 0xDC)
@@ -663,12 +662,12 @@ static int ev3_uart_receive_buf2(struct tty_struct *tty,
 				chksum ^= port->last_byte_10;
 			}
 
-			/*
-			 * Record last byte at position 10 for RGB-RAW checksum
-			 * correction.
-			 */
-			if (msg_size >= 10)
+			if (msg_size >= 10) {
 				port->last_byte_10 = message[9];
+			}
+
+			debug_pr("chksum:%d, actual:%d\n",
+				 chksum, message[msg_size - 1]);
 
 			if (chksum != message[msg_size - 1]) {
 				port->last_err = "Bad checksum.";
